@@ -15,11 +15,21 @@ def seed_data():
     db = SessionLocal()
     
     try:
-        # Check if data already exists
-        existing_count = db.query(Product).count()
-        if existing_count > 0:
-            print(f"⚠️  Database already has {existing_count} products. Skipping seed.")
+        # Check how many demo products already exist (by barcode prefix)
+        demo_barcodes = ['ELC', 'BEV', 'SNK', 'STA', 'PC0']
+        existing_demo = db.query(Product).filter(
+            Product.barcode.like('ELC%') | 
+            Product.barcode.like('BEV%') | 
+            Product.barcode.like('SNK%') | 
+            Product.barcode.like('STA%') | 
+            Product.barcode.like('PC0%')
+        ).count()
+        
+        if existing_demo >= 16:
+            print(f"⚠️  Demo products already seeded ({existing_demo} found). Skipping.")
             return
+        
+        print(f"📦 Found {existing_demo} demo products, adding missing ones...")
         
         # Demo products
         demo_products = [
