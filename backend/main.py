@@ -7,10 +7,10 @@ from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
-from backend.database import get_db, init_db
-from backend.auth import authenticate_pin, create_access_token
-from backend.schemas import AuthRequest, AuthResponse
-from backend.routers import products, inventory, sales, pos, sync, analytics
+from database import get_db, init_db
+from auth import authenticate_pin, create_access_token
+from schemas import AuthRequest, AuthResponse
+from routers import products, inventory, sales, pos, sync, analytics
 
 
 @asynccontextmanager
@@ -95,4 +95,4 @@ async def health_check():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("backend.main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

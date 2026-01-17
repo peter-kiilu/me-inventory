@@ -2,8 +2,8 @@
 Seed data script to populate database with demo products
 """
 from sqlalchemy.orm import Session
-from backend.database import SessionLocal, init_db
-from backend.models import Product, Inventory
+from database import SessionLocal, init_db
+from models import Product, Inventory
 
 
 def seed_data():

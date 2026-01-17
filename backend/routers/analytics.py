@@ -7,9 +7,9 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import func, desc
 
-from backend.database import get_db
-from backend.models import Sale, SaleItem, Product, Inventory
-from backend.schemas import SalesAnalytics
+from database import get_db
+from models import Sale, SaleItem, Product, Inventory
+from schemas import SalesAnalytics
 
 router = APIRouter(prefix="/api/analytics", tags=["Analytics"])
 

@@ -5,9 +5,9 @@ from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 import logging
 
-from backend.database import get_db
-from backend.models import Sale, SaleItem, Product, Inventory, SaleStatus, SyncStatus
-from backend.schemas import SaleCreate, Sale as SaleSchema
+from database import get_db
+from models import Sale, SaleItem, Product, Inventory, SaleStatus, SyncStatus
+from schemas import SaleCreate, Sale as SaleSchema
 
 router = APIRouter(prefix="/api/pos", tags=["POS Integration"])
 

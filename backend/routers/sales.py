@@ -7,10 +7,10 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
-from backend.database import get_db
-from backend.models import Sale, SaleItem, Product, Inventory, SaleStatus, SyncStatus
-from backend.schemas import SaleCreate, Sale as SaleSchema, MessageResponse
-from backend.auth import verify_token
+from database import get_db
+from models import Sale, SaleItem, Product, Inventory, SaleStatus, SyncStatus
+from schemas import SaleCreate, Sale as SaleSchema, MessageResponse
+from auth import verify_token
 
 router = APIRouter(prefix="/api/sales", tags=["Sales"])
 

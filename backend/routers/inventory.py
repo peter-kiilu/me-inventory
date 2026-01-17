@@ -5,10 +5,10 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from backend.database import get_db
-from backend.models import Inventory, Product
-from backend.schemas import InventoryUpdate, ProductWithInventory, MessageResponse
-from backend.auth import verify_token
+from database import get_db
+from models import Inventory, Product
+from schemas import InventoryUpdate, ProductWithInventory, MessageResponse
+from auth import verify_token
 
 router = APIRouter(prefix="/api/inventory", tags=["Inventory"])
 

@@ -6,7 +6,7 @@ from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Tex
 from sqlalchemy.orm import relationship
 import enum
 
-from backend.database import Base
+from database import Base
 
 
 class SaleStatus(str, enum.Enum):
