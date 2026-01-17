@@ -2,6 +2,13 @@
 
 A modern, full-stack inventory management application for retail shops with POS integration, offline capabilities, and mobile deployment as a Progressive Web App (PWA).
 
+## 🌐 Live Demo
+
+- **Frontend:** [https://me-inventory.vercel.app](https://me-inventory.vercel.app)
+- **Backend API:** [https://mestock-api.onrender.com](https://mestock-api.onrender.com)
+- **API Docs:** [https://mestock-api.onrender.com/docs](https://mestock-api.onrender.com/docs)
+- **Default PIN:** `1234`
+
 ## 🚀 Features
 
 ### Core Functionality
@@ -18,7 +25,6 @@ A modern, full-stack inventory management application for retail shops with POS 
 - ✅ **Offline-First Design**: Works without internet connection
 - ✅ **Local Data Storage**: IndexedDB for products and pending transactions
 - ✅ **Auto-Sync**: Automatically syncs when connection is restored
-- ✅ **No Data Loss**: All offline sales are queued and synced
 
 ### Mobile & Deployment
 
@@ -28,127 +34,77 @@ A modern, full-stack inventory management application for retail shops with POS 
 
 ## 🛠️ Technology Stack
 
-### Backend
+| Layer        | Technologies                                           |
+| ------------ | ------------------------------------------------------ |
+| **Backend**  | Python 3.11, FastAPI, SQLAlchemy, PostgreSQL, JWT Auth |
+| **Frontend** | React 18, TypeScript, Vite, Zustand, Recharts          |
+| **Offline**  | IndexedDB, Service Workers, Workbox                    |
+| **Hosting**  | Render (Backend), Vercel (Frontend)                    |
 
-- **Python 3.10+**
-- **FastAPI**: Modern, fast web framework
-- **SQLAlchemy**: ORM for database management
-- **SQLite**: Lightweight database
-- **JWT Authentication**: Secure token-based auth
-
-### Frontend
-
-- **React 18+** with TypeScript
-- **Vite**: Fast build tool
-- **Zustand**: State management
-- **IndexedDB**: Offline storage
-- **Recharts**: Data visualization
-- **Workbox**: Service worker management
-
-## 📦 Installation
+## 📦 Local Development
 
 ### Prerequisites
 
-- Python 3.10 or higher
-- Node.js 18 or higher
-- npm or yarn
+- Python 3.10+
+- Node.js 18+
 
 ### Backend Setup
 
-1. Navigate to the backend directory:
-
 ```bash
 cd backend
-```
-
-2. Create a virtual environment:
-
-```bash
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-3. Install dependencies:
-
-```bash
+venv\Scripts\activate          # Windows
+# source venv/bin/activate     # Linux/Mac
 pip install -r requirements.txt
+python seed_data.py            # Seed demo data
+python main.py                 # Start server at http://localhost:8000
 ```
-
-4. Seed the database with demo data:
-
-```bash
-python seed_data.py
-```
-
-5. Start the backend server:
-
-```bash
-python main.py
-```
-
-The API will be available at `http://localhost:8000`
-API documentation: `http://localhost:8000/docs`
 
 ### Frontend Setup
 
-1. Navigate to the frontend directory:
-
 ```bash
 cd frontend
-```
-
-2. Install dependencies:
-
-```bash
 npm install
+npm run dev                    # Start at http://localhost:5173
 ```
 
-3. Start the development server:
+## � Deployment
 
-```bash
-npm run dev
-```
+### Backend (Render)
 
-The app will be available at `http://localhost:5173`
+1. Create a new **Web Service** on [Render](https://render.com)
+2. Connect your GitHub repo
+3. Set **Root Directory**: `backend`
+4. Set **Build Command**: `pip install -r requirements.txt`
+5. Set **Start Command**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
+6. Add environment variables:
+   - `DATABASE_URL` - PostgreSQL connection string
+   - `SECRET_KEY` - Random 32+ character string
+   - `ALLOWED_ORIGINS` - Your Vercel frontend URL
+   - `DEFAULT_PIN` - `1234` (or your preferred PIN)
 
-## 🔐 Authentication
+### Frontend (Vercel)
 
-- **Default PIN**: `1234`
-- Change this in `backend/auth.py` for production use
+1. Import project on [Vercel](https://vercel.com)
+2. Set **Root Directory**: `frontend`
+3. Add environment variable:
+   - `VITE_API_URL` - `https://your-render-backend.onrender.com/api`
 
-## 📱 Installing as PWA
+## 📱 Install as PWA
 
-### Android
-
-1. Open the app in Chrome
-2. Tap the menu (⋮) → "Install app" or "Add to Home screen"
-3. Follow the prompts
-
-### iOS
-
-1. Open the app in Safari
-2. Tap the Share button
-3. Select "Add to Home Screen"
-
-### Desktop
-
-1. Open the app in Chrome/Edge
-2. Click the install icon in the address bar
-3. Click "Install"
+| Platform    | Instructions                                    |
+| ----------- | ----------------------------------------------- |
+| **Android** | Chrome → Menu (⋮) → "Install app"               |
+| **iOS**     | Safari → Share → "Add to Home Screen"           |
+| **Desktop** | Chrome/Edge → Click install icon in address bar |
 
 ## 🔌 POS API Integration
 
-The application exposes a REST API endpoint for POS systems:
-
-### Endpoint
-
-```
+```bash
 POST /api/pos/sale
-```
+Authorization: Bearer <token>
+Content-Type: application/json
 
-### Request Body
-
-```json
 {
   "items": [
     { "product_id": 1, "quantity": 2 },
@@ -157,173 +113,21 @@ POST /api/pos/sale
 }
 ```
 
-### Response
+## � API Endpoints
 
-```json
-{
-  "id": 123,
-  "sale_date": "2026-01-15T22:00:00",
-  "total_amount": 45.97,
-  "status": "completed",
-  "items": [...]
-}
-```
+| Category      | Endpoint                       | Description          |
+| ------------- | ------------------------------ | -------------------- |
+| **Auth**      | `POST /api/auth/login`         | Login with PIN       |
+| **Products**  | `GET/POST /api/products/`      | List/Create products |
+| **Inventory** | `GET /api/inventory/`          | Get stock levels     |
+| **Sales**     | `POST /api/sales/`             | Create sale          |
+| **Analytics** | `GET /api/analytics/dashboard` | Dashboard metrics    |
 
-### Error Responses
-
-- `400`: Insufficient stock or invalid data
-- `404`: Product not found
-- `500`: Server error
-
-## 📊 API Documentation
-
-Full API documentation is available at `/docs` when running the backend server.
-
-### Main Endpoints
-
-**Authentication**
-
-- `POST /api/auth/login` - Login with PIN
-
-**Products**
-
-- `GET /api/products/` - List all products
-- `POST /api/products/` - Create product
-- `PUT /api/products/{id}` - Update product
-- `DELETE /api/products/{id}` - Delete product
-
-**Inventory**
-
-- `GET /api/inventory/` - Get inventory status
-- `PUT /api/inventory/{id}` - Update inventory
-- `POST /api/inventory/{id}/adjust` - Adjust stock levels
-
-**Sales**
-
-- `GET /api/sales/` - List sales
-- `POST /api/sales/` - Create sale
-- `GET /api/sales/{id}` - Get sale details
-
-**Analytics**
-
-- `GET /api/analytics/dashboard` - Get dashboard metrics
-- `GET /api/analytics/low-stock` - Low stock report
-- `GET /api/analytics/revenue-trend` - Revenue trends
-
-**Sync**
-
-- `POST /api/sync/queue` - Add to sync queue
-- `POST /api/sync/process` - Process pending syncs
-
-## 🗄️ Database Schema
-
-### Products
-
-- id, name, description, category, price, barcode
-- timestamps: created_at, updated_at
-
-### Inventory
-
-- product_id, quantity, min_stock_level, last_updated
-
-### Sales
-
-- id, sale_date, total_amount, status, sync_status
-
-### Sale Items
-
-- sale_id, product_id, quantity, unit_price, subtotal
-
-### Sync Queue
-
-- transaction_type, payload, status, created_at, synced_at
-
-## 🚢 Deployment
-
-### Production Build
-
-**Backend**
-
-```bash
-cd backend
-pip install -r requirements.txt
-uvicorn main:app --host 0.0.0.0 --port 8000
-```
-
-**Frontend**
-
-```bash
-cd frontend
-npm run build
-npm run preview  # or serve the dist folder
-```
-
-### Deployment Options
-
-**Backend**
-
-- Railway.app
-- Render.com
-- Heroku
-- Any VPS (DigitalOcean, AWS, etc.)
-
-**Frontend**
-
-- Netlify (recommended for PWA)
-- Vercel
-- GitHub Pages
-- Any static hosting
-
-See `DEPLOYMENT.md` for detailed deployment instructions.
-
-## 📈 Future Scalability
-
-### Recommended Enhancements
-
-1. **Database**: Migrate to PostgreSQL/MySQL for better performance
-2. **Multi-Store**: Add support for multiple store locations
-3. **User Roles**: Implement role-based access control
-4. **Barcode Scanning**: Add camera-based barcode scanner
-5. **Receipt Printing**: Integrate thermal printer support
-6. **Cloud Sync**: Add cloud backup and sync across devices
-7. **Advanced Analytics**: More detailed reports and forecasting
-8. **Notifications**: Email/SMS alerts for low stock
-
-See `SCALABILITY.md` for detailed recommendations.
-
-## 🐛 Troubleshooting
-
-### Backend Issues
-
-- **Database locked**: Ensure only one instance is running
-- **Import errors**: Check Python version and virtual environment
-
-### Frontend Issues
-
-- **Service worker errors**: Clear browser cache and reinstall PWA
-- **Offline sync not working**: Check browser console for errors
-- **Charts not rendering**: Ensure Recharts is installed correctly
+Full documentation at `/docs` endpoint.
 
 ## 📝 License
 
-MIT License - feel free to use this project for commercial purposes.
-
-## 🤝 Contributing
-
-Contributions are welcome! Please follow these steps:
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
-
-## 📞 Support
-
-For issues and questions:
-
-- Check the API documentation at `/docs`
-- Review the troubleshooting section
-- Open an issue on GitHub
+MIT License - free for commercial use.
 
 ---
 

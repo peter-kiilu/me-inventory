@@ -7,10 +7,11 @@ from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
-from database import get_db, init_db
+from database import get_db, init_db, SessionLocal
 from auth import authenticate_pin, create_access_token
 from schemas import AuthRequest, AuthResponse
 from routers import products, inventory, sales, pos, sync, analytics
+from models import Product
 
 
 @asynccontextmanager
@@ -19,6 +20,19 @@ async def lifespan(app: FastAPI):
     # Startup
     init_db()
     print("✅ Database initialized")
+    
+    # Auto-seed if database is empty
+    db = SessionLocal()
+    try:
+        if db.query(Product).count() == 0:
+            print("📦 Database is empty, seeding demo data...")
+            from seed_data import seed_data
+            seed_data()
+        else:
+            print("📦 Database already has data, skipping seed")
+    finally:
+        db.close()
+    
     print("📊 Inventory Management System API started")
     print("📚 API docs available at: http://localhost:8000/docs")
     yield
