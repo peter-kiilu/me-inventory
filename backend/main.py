@@ -1,6 +1,7 @@
 """
 Main FastAPI application
 """
+import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -32,10 +33,17 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS configuration - adjust for production
+# CORS configuration - reads from ALLOWED_ORIGINS environment variable
+# In production, set ALLOWED_ORIGINS to your frontend URL(s), comma-separated
+allowed_origins_str = os.getenv("ALLOWED_ORIGINS", "*")
+if allowed_origins_str == "*":
+    allowed_origins = ["*"]
+else:
+    allowed_origins = [origin.strip() for origin in allowed_origins_str.split(",")]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Change to specific origins in production
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

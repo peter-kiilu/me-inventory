@@ -167,7 +167,7 @@ class OfflineDB {
 
   // General
   async clear() {
-    const db = await this.init();
+    await this.init();
     await this.clearProducts();
     await this.clearPendingSales();
   }
