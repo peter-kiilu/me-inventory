@@ -117,5 +117,5 @@ def authenticate_pin(pin: str) -> bool:
     Authenticate user using PIN.
     DEV MODE: Using simple comparison. Use verify_pin with hashed PIN in production.
     """
-    default_pin = os.getenv("DEFAULT_PIN", "1234")
+    default_pin = os.getenv("DEFAULT_PIN", "0987")
     return pin == default_pin
