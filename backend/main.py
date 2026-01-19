@@ -70,7 +70,7 @@ async def root():
         "message": "Inventory Management System API",
         "version": "1.0.0",
         "docs": "/docs",
-        "default_pin": "1234"
+        "docs_url": "/docs"
     }
 
 
@@ -78,7 +78,7 @@ async def root():
 async def login(auth_data: AuthRequest):
     """
     Authenticate with PIN and receive JWT token.
-    Default PIN: 1234
+    Use your configured PIN to authenticate.
     """
     if not authenticate_pin(auth_data.pin):
         raise HTTPException(

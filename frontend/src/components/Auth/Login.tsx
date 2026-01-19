@@ -77,19 +77,6 @@ export default function Login() {
             )}
           </button>
         </form>
-
-        <div style={{
-          marginTop: 'var(--spacing-xl)',
-          padding: 'var(--spacing-md)',
-          background: 'rgba(59, 130, 246, 0.1)',
-          border: '1px solid rgba(59, 130, 246, 0.3)',
-          borderRadius: 'var(--radius-md)',
-          fontSize: '.875rem'
-        }}>
-          <p style={{ margin: 0, color: 'var(--info)' }}>
-            💡 Default PIN: <strong>1234</strong>
-          </p>
-        </div>
       </div>
     </div>
   );

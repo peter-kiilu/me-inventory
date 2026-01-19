@@ -86,7 +86,6 @@ def seed_data():
         
         db.commit()
         print(f"\n✅ Successfully created {len(demo_products)} demo products!")
-        print("🔐 Default PIN: 1234")
         
     except Exception as e:
         print(f"❌ Error seeding data: {str(e)}")
