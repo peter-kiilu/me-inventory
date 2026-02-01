@@ -7,18 +7,34 @@ interface LayoutProps {
   children: ReactNode;
 }
 
+interface NavItem {
+  path: string;
+  label: string;
+  icon: string;
+  adminOnly?: boolean;
+}
+
 export default function Layout({ children }: LayoutProps) {
   const location = useLocation();
-  const logout = useStore((state) => state.logout);
+  const { logout, isAdmin, user } = useStore();
 
-  const navItems = [
-    { path: '/', label: 'Dashboard', icon: '📊' },
-    { path: '/products', label: 'Products', icon: '📦' },
-    { path: '/inventory', label: 'Inventory', icon: '📋' },
-    { path: '/sales', label: 'New Sale', icon: '🛒' },
-    { path: '/sales/history', label: 'Sales History', icon: '📜' },
-    { path: '/analytics', label: 'Analytics', icon: '📈' },
+  const navItems: NavItem[] = [
+    { path: '/', label: isAdmin() ? 'Dashboard' : 'New Sale', icon: isAdmin() ? '📊' : '🛒' },
+    { path: '/products', label: 'Products', icon: '📦', adminOnly: true },
+    { path: '/inventory', label: 'Inventory', icon: '📋', adminOnly: true },
+    { path: '/sales', label: 'New Sale', icon: '🛒', adminOnly: true },
+    { path: '/sales/history', label: 'Sales History', icon: '📜', adminOnly: true },
+    { path: '/analytics', label: 'Analytics', icon: '📈', adminOnly: true },
+    { path: '/users', label: 'Users', icon: '👥', adminOnly: true },
   ];
+
+  // Filter nav items based on role
+  const visibleNavItems = navItems.filter(item => {
+    if (item.adminOnly && !isAdmin()) return false;
+    // Don't show duplicate "New Sale" for staff (home is already sales)
+    if (!isAdmin() && item.path === '/sales' && item.adminOnly) return false;
+    return true;
+  });
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
@@ -32,12 +48,34 @@ export default function Layout({ children }: LayoutProps) {
         <div className="container">
           <div className="flex-between">
             <div className="flex gap-md" style={{ alignItems: 'center' }}>
-              <h2 style={{ margin: 0, fontSize: '1.5rem' }}>🛒 MeStock</h2>
+              <h2 style={{ margin: 0, fontSize: '1.5rem' }}>🛒 CoolHarlems</h2>
               <NetworkStatus />
             </div>
-            <button onClick={logout} className="btn btn-outline" style={{ padding: 'var(--spacing-sm) var(--spacing-md)' }}>
-              Logout
-            </button>
+            <div className="flex gap-md" style={{ alignItems: 'center' }}>
+              <span style={{ 
+                fontSize: '0.875rem', 
+                color: 'var(--text-secondary)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 'var(--spacing-sm)'
+              }}>
+                <span style={{
+                  padding: '0.25rem 0.5rem',
+                  borderRadius: 'var(--radius-full)',
+                  background: isAdmin() ? 'rgba(99, 102, 241, 0.2)' : 'rgba(16, 185, 129, 0.2)',
+                  color: isAdmin() ? 'var(--primary)' : 'var(--success)',
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  textTransform: 'uppercase'
+                }}>
+                  {user.role}
+                </span>
+                {user.username}
+              </span>
+              <button onClick={logout} className="btn btn-outline" style={{ padding: 'var(--spacing-sm) var(--spacing-md)' }}>
+                Logout
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -51,7 +89,7 @@ export default function Layout({ children }: LayoutProps) {
       }}>
         <div className="container">
           <div className="flex gap-sm" style={{ flexWrap: 'wrap' }}>
-            {navItems.map((item) => (
+            {visibleNavItems.map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
@@ -94,7 +132,7 @@ export default function Layout({ children }: LayoutProps) {
         fontSize: '0.875rem'
       }}>
         <p style={{ margin: 0 }}>
-          © 2026 MeStock Inventory Management System
+          © 2026  CoolHarlems Management System
         </p>
       </footer>
     </div>

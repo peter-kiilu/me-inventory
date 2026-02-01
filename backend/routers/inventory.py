@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from database import get_db
 from models import Inventory, Product
 from schemas import InventoryUpdate, ProductWithInventory, MessageResponse
-from auth import verify_token
+from auth import require_admin
 
 router = APIRouter(prefix="/api/inventory", tags=["Inventory"])
 
@@ -53,9 +53,9 @@ async def update_inventory(
     product_id: int,
     inventory_data: InventoryUpdate,
     db: Session = Depends(get_db),
-    token: dict = Depends(verify_token)
+    token: dict = Depends(require_admin)
 ):
-    """Update inventory levels for a product"""
+    """Update inventory levels for a product (Admin only)"""
     inventory = db.query(Inventory).filter(Inventory.product_id == product_id).first()
     if not inventory:
         raise HTTPException(
@@ -80,10 +80,10 @@ async def adjust_inventory(
     product_id: int,
     adjustment: int,
     db: Session = Depends(get_db),
-    token: dict = Depends(verify_token)
+    token: dict = Depends(require_admin)
 ):
     """
-    Adjust inventory by a relative amount (positive to add, negative to remove).
+    Adjust inventory by a relative amount (positive to add, negative to remove) (Admin only).
     Example: adjustment=10 adds 10 units, adjustment=-5 removes 5 units.
     """
     inventory = db.query(Inventory).filter(Inventory.product_id == product_id).first()
