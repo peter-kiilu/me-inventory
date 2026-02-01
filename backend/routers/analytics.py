@@ -10,6 +10,7 @@ from sqlalchemy import func, desc
 from database import get_db
 from models import Sale, SaleItem, Product, Inventory
 from schemas import SalesAnalytics
+from auth import require_admin
 
 router = APIRouter(prefix="/api/analytics", tags=["Analytics"])
 
@@ -17,10 +18,11 @@ router = APIRouter(prefix="/api/analytics", tags=["Analytics"])
 @router.get("/dashboard", response_model=SalesAnalytics)
 async def get_dashboard_analytics(
     days: int = Query(default=30, ge=1, le=365),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: dict = Depends(require_admin)
 ):
     """
-    Get comprehensive sales analytics for the dashboard.
+    Get comprehensive sales analytics for the dashboard (Admin only).
     Default: last 30 days
     """
     start_date = datetime.utcnow() - timedelta(days=days)
@@ -104,8 +106,11 @@ async def get_dashboard_analytics(
 
 
 @router.get("/low-stock")
-async def get_low_stock_report(db: Session = Depends(get_db)):
-    """Get products that are at or below minimum stock level"""
+async def get_low_stock_report(
+    db: Session = Depends(get_db),
+    token: dict = Depends(require_admin)
+):
+    """Get products that are at or below minimum stock level (Admin only)"""
     low_stock = db.query(Product, Inventory).join(Inventory).filter(
         Inventory.quantity <= Inventory.min_stock_level
     ).all()
@@ -126,9 +131,10 @@ async def get_low_stock_report(db: Session = Depends(get_db)):
 @router.get("/revenue-trend")
 async def get_revenue_trend(
     days: int = Query(default=30, ge=1, le=365),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: dict = Depends(require_admin)
 ):
-    """Get revenue trend over time"""
+    """Get revenue trend over time (Admin only)"""
     start_date = datetime.utcnow() - timedelta(days=days)
     
     trend_data = db.query(
@@ -145,3 +151,34 @@ async def get_revenue_trend(
         }
         for t in trend_data
     ]
+
+
+@router.get("/inventory-summary")
+async def get_inventory_summary(
+    db: Session = Depends(get_db),
+    token: dict = Depends(require_admin)
+):
+    """Get total inventory summary (Admin only)"""
+    # Total stock quantity across all products
+    total_stock = db.query(func.sum(Inventory.quantity)).scalar() or 0
+    
+    # Total inventory value (quantity * price per product)
+    inventory_value = db.query(
+        func.sum(Inventory.quantity * Product.price)
+    ).join(Product, Inventory.product_id == Product.id).scalar() or 0.0
+    
+    # Count of products
+    total_products = db.query(func.count(Product.id)).scalar() or 0
+    
+    # Count of low stock items
+    low_stock_count = db.query(func.count(Inventory.id)).filter(
+        Inventory.quantity <= Inventory.min_stock_level
+    ).scalar() or 0
+    
+    return {
+        "total_stock_units": int(total_stock),
+        "total_inventory_value": float(inventory_value),
+        "total_products": int(total_products),
+        "low_stock_count": int(low_stock_count)
+    }
+

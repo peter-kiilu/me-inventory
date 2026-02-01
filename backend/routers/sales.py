@@ -10,7 +10,7 @@ from sqlalchemy import func
 from database import get_db
 from models import Sale, SaleItem, Product, Inventory, SaleStatus, SyncStatus
 from schemas import SaleCreate, Sale as SaleSchema, MessageResponse
-from auth import verify_token
+from auth import require_admin, verify_token
 
 router = APIRouter(prefix="/api/sales", tags=["Sales"])
 
@@ -20,10 +20,11 @@ async def get_sales(
     skip: int = 0,
     limit: int = 100,
     days: int = None,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: dict = Depends(require_admin)
 ):
     """
-    Get sales history.
+    Get sales history (Admin only).
     Use days parameter to filter recent sales (e.g., days=7 for last week).
     """
     query = db.query(Sale)
@@ -39,9 +40,10 @@ async def get_sales(
 @router.get("/{sale_id}", response_model=SaleSchema)
 async def get_sale(
     sale_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: dict = Depends(require_admin)
 ):
-    """Get a specific sale by ID"""
+    """Get a specific sale by ID (Admin only)"""
     sale = db.query(Sale).filter(Sale.id == sale_id).first()
     if not sale:
         raise HTTPException(
@@ -60,6 +62,7 @@ async def create_sale(
     """
     Create a new sale transaction.
     Automatically deducts stock and prevents sales with insufficient inventory.
+    Available to all authenticated users (Admin and Staff).
     """
     if not sale_data.items:
         raise HTTPException(
@@ -141,10 +144,10 @@ async def delete_sale(
     sale_id: int,
     restore_inventory: bool = True,
     db: Session = Depends(get_db),
-    token: dict = Depends(verify_token)
+    token: dict = Depends(require_admin)
 ):
     """
-    Delete a sale transaction.
+    Delete a sale transaction (Admin only).
     Use restore_inventory=true to add the sold quantities back to inventory.
     """
     sale = db.query(Sale).filter(Sale.id == sale_id).first()

@@ -2,7 +2,7 @@
 SQLAlchemy ORM models for the inventory management system
 """
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Text, Enum
+from sqlalchemy import Column, Integer, String, Float, DateTime, Date, ForeignKey, Text, Enum
 from sqlalchemy.orm import relationship
 import enum
 
@@ -21,6 +21,25 @@ class SyncStatus(str, enum.Enum):
     PENDING = "pending"
     SYNCED = "synced"
     FAILED = "failed"
+
+
+class UserRole(str, enum.Enum):
+    """Enum for user roles"""
+    ADMIN = "admin"
+    STAFF = "staff"
+
+
+class User(Base):
+    """User model for authentication and authorization"""
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String(100), unique=True, nullable=False, index=True)
+    pin_hash = Column(String(255), nullable=False)
+    role = Column(Enum(UserRole), default=UserRole.STAFF, nullable=False)
+    is_active = Column(Integer, default=1, nullable=False)  # 1=active, 0=inactive
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
 class Product(Base):
@@ -49,6 +68,8 @@ class Inventory(Base):
     product_id = Column(Integer, ForeignKey("products.id"), unique=True, nullable=False)
     quantity = Column(Integer, nullable=False, default=0)
     min_stock_level = Column(Integer, nullable=False, default=10)
+    batch_number = Column(String(100), nullable=True, index=True)
+    expiry_date = Column(Date, nullable=True, index=True)
     last_updated = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships

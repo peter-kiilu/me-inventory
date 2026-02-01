@@ -5,6 +5,9 @@ import { create } from 'zustand';
 
 interface User {
   authenticated: boolean;
+  user_id?: number;
+  username?: string;
+  role?: 'admin' | 'staff';
 }
 
 interface Product {
@@ -19,6 +22,8 @@ interface Product {
   inventory?: {
     quantity: number;
     min_stock_level: number;
+    batch_number?: string;
+    expiry_date?: string;
   };
 }
 
@@ -27,6 +32,8 @@ interface AppState {
   user: User;
   setUser: (user: User) => void;
   logout: () => void;
+  isAdmin: () => boolean;
+  isStaff: () => boolean;
 
   // Network status
   isOnline: boolean;
@@ -45,14 +52,17 @@ interface AppState {
   setLoading: (loading: boolean) => void;
 }
 
-export const useStore = create<AppState>((set) => ({
+export const useStore = create<AppState>((set, get) => ({
   // Auth
   user: { authenticated: false },
   setUser: (user) => set({ user }),
   logout: () => {
     set({ user: { authenticated: false } });
     localStorage.removeItem('token');
+    localStorage.removeItem('userInfo');
   },
+  isAdmin: () => get().user.role === 'admin',
+  isStaff: () => get().user.role === 'staff',
 
   // Network
   isOnline: navigator.onLine,

@@ -57,6 +57,6 @@ def init_db():
     Initialize database - create all tables.
     Call this when starting the application.
     """
-    from models import Product, Inventory, Sale, SaleItem, SyncQueue
+    from models import Product, Inventory, Sale, SaleItem, SyncQueue, User
     Base.metadata.create_all(bind=engine)
 

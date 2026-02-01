@@ -1,5 +1,5 @@
 """
-Authentication module with JWT tokens (production-safe)
+Authentication module with JWT tokens and role-based access control
 """
 
 from datetime import datetime, timedelta
@@ -10,6 +10,10 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from sqlalchemy.orm import Session
+
+from database import get_db
+from models import User, UserRole
 
 # =====================================================
 # Security configuration (USE ENV VARIABLES IN PROD)
@@ -26,16 +30,6 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24 hours
 pwd_context = CryptContext(
     schemes=["bcrypt"],
     deprecated="auto",
-)
-
-# =====================================================
-# Default PIN (DEV ONLY)
-# =====================================================
-# ⚠️ In production, store hashed PINs in the database
-
-DEFAULT_PIN_HASH = os.getenv(
-    "DEFAULT_PIN_HASH",
-    "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4.G7J0IfXaVg0o.G"  # hash of "1234"
 )
 
 # =====================================================
@@ -91,6 +85,7 @@ def verify_token(
 ) -> dict:
     """
     Verify JWT token from Authorization header.
+    Returns payload with user_id, username, and role.
     """
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -109,13 +104,88 @@ def verify_token(
 
 
 # =====================================================
+# Role-based authorization
+# =====================================================
+
+def require_admin(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+) -> dict:
+    """
+    Verify token and ensure user has admin role.
+    Use this dependency for admin-only endpoints.
+    """
+    payload = verify_token(credentials)
+    
+    if payload.get("role") != UserRole.ADMIN.value:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required"
+        )
+    
+    return payload
+
+
+def require_staff_or_admin(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+) -> dict:
+    """
+    Verify token and ensure user has staff or admin role.
+    Use this dependency for endpoints accessible to all authenticated users.
+    """
+    payload = verify_token(credentials)
+    
+    role = payload.get("role")
+    if role not in [UserRole.ADMIN.value, UserRole.STAFF.value]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied"
+        )
+    
+    return payload
+
+
+# =====================================================
 # Authentication logic
 # =====================================================
 
-def authenticate_pin(pin: str) -> bool:
+def authenticate_user(username: str, pin: str, db: Session) -> Optional[User]:
     """
-    Authenticate user using PIN.
-    DEV MODE: Using simple comparison. Use verify_pin with hashed PIN in production.
+    Authenticate user by username and PIN.
+    Returns User object if authenticated, None otherwise.
     """
     default_pin = os.getenv("DEFAULT_PIN", "0987")
     return pin == default_pin
+    user = db.query(User).filter(
+        User.username == username,
+        User.is_active == 1
+    ).first()
+    
+    if not user:
+        return None
+    
+    if not verify_pin(pin, user.pin_hash):
+        return None
+    
+    return user
+
+
+def create_default_admin(db: Session):
+    """
+    Create default admin user if none exists.
+    """
+    admin = db.query(User).filter(User.role == UserRole.ADMIN).first()
+    
+    if not admin:
+        default_pin = os.getenv("DEFAULT_ADMIN_PIN", "1234")
+        admin = User(
+            username="admin",
+            pin_hash=get_password_hash(default_pin),
+            role=UserRole.ADMIN,
+            is_active=1
+        )
+        db.add(admin)
+        db.commit()
+        print("✅ Default admin user created (username: admin, PIN: 1234)")
+    
+    return admin
+

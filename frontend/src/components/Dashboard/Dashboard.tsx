@@ -7,6 +7,8 @@ interface DashboardStats {
   lowStockItems: number;
   totalSales: number;
   recentSales: number;
+  totalStockUnits: number;
+  totalInventoryValue: number;
 }
 
 export default function Dashboard() {
@@ -14,7 +16,9 @@ export default function Dashboard() {
     totalProducts: 0,
     lowStockItems: 0,
     totalSales: 0,
-    recentSales: 0
+    recentSales: 0,
+    totalStockUnits: 0,
+    totalInventoryValue: 0
   });
   const [loading, setLoading] = useState(true);
 
@@ -24,17 +28,18 @@ export default function Dashboard() {
 
   const loadDashboardData = async () => {
     try {
-      const [products, lowStock, salesData] = await Promise.all([
-        api.getProducts({ limit: 1000 }),
-        api.getInventory({ low_stock: true }),
-        api.getDashboardAnalytics(7)
+      const [salesData, inventorySummary] = await Promise.all([
+        api.getDashboardAnalytics(7),
+        api.getInventorySummary()
       ]);
 
       setStats({
-        totalProducts: products.length,
-        lowStockItems: lowStock.length,
+        totalProducts: inventorySummary.total_products,
+        lowStockItems: inventorySummary.low_stock_count,
         totalSales: salesData.total_sales,
-        recentSales: salesData.total_transactions
+        recentSales: salesData.total_transactions,
+        totalStockUnits: inventorySummary.total_stock_units,
+        totalInventoryValue: inventorySummary.total_inventory_value
       });
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
@@ -52,15 +57,29 @@ export default function Dashboard() {
       link: '/products'
     },
     {
+      title: 'Total Stock',
+      value: `${stats.totalStockUnits.toLocaleString()} units`,
+      icon: '📊',
+      color: 'var(--accent)',
+      link: '/inventory'
+    },
+    {
+      title: 'Inventory Value',
+      value: `KSH ${stats.totalInventoryValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
+      icon: '💎',
+      color: 'var(--info)',
+      link: '/inventory'
+    },
+    {
       title: 'Low Stock Items',
       value: stats.lowStockItems,
       icon: '⚠️',
-      color: 'var(--warning)',
+      color: stats.lowStockItems > 0 ? 'var(--warning)' : 'var(--success)',
       link: '/inventory'
     },
     {
       title: 'Total Sales (Week)',
-      value: `KSH ${stats.totalSales.toFixed(0)}`,
+      value: `KSH ${stats.totalSales.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
       icon: '💰',
       color: 'var(--success)',
       link: '/analytics'
@@ -69,7 +88,7 @@ export default function Dashboard() {
       title: 'Transactions (Week)',
       value: stats.recentSales,
       icon: '🛒',
-      color: 'var(--info)',
+      color: 'var(--primary)',
       link: '/sales/history'
     }
   ];
@@ -95,7 +114,7 @@ export default function Dashboard() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-2 mb-xl">
+      <div className="grid grid-3 mb-xl">
         {statCards.map((card) => (
           <Link
             key={card.title}
@@ -108,11 +127,11 @@ export default function Dashboard() {
                 <p className="text-muted" style={{ fontSize: '0.875rem', marginBottom: 'var(--spacing-sm)' }}>
                   {card.title}
                 </p>
-                <h2 style={{ fontSize: '2rem', margin: 0, color: card.color }}>
+                <h2 style={{ fontSize: '1.75rem', margin: 0, color: card.color }}>
                   {card.value}
                 </h2>
               </div>
-              <div style={{ fontSize: '3rem', opacity: 0.5 }}>
+              <div style={{ fontSize: '2.5rem', opacity: 0.5 }}>
                 {card.icon}
               </div>
             </div>

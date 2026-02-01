@@ -3,14 +3,14 @@ Main FastAPI application
 """
 import os
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, status, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
 from database import get_db, init_db
-from auth import authenticate_pin, create_access_token
+from auth import authenticate_user, create_access_token, create_default_admin
 from schemas import AuthRequest, AuthResponse
-from routers import products, inventory, sales, pos, sync, analytics
+from routers import products, inventory, sales, pos, sync, analytics, users
 
 
 @asynccontextmanager
@@ -19,6 +19,14 @@ async def lifespan(app: FastAPI):
     # Startup
     init_db()
     print("✅ Database initialized")
+    
+    # Create default admin user
+    from database import SessionLocal
+    db = SessionLocal()
+    try:
+        create_default_admin(db)
+    finally:
+        db.close()
     
     # Auto-seed demo data on startup (seed_data handles duplicate prevention)
     from seed_data import seed_data
@@ -33,8 +41,8 @@ async def lifespan(app: FastAPI):
 # Initialize FastAPI app with lifespan
 app = FastAPI(
     title="Inventory Management System API",
-    description="REST API for retail shop inventory management with POS integration",
-    version="1.0.0",
+    description="REST API for retail shop inventory management with POS integration and role-based access control",
+    version="2.0.0",
     lifespan=lifespan
 )
 
@@ -61,6 +69,7 @@ app.include_router(sales.router)
 app.include_router(pos.router)
 app.include_router(sync.router)
 app.include_router(analytics.router)
+app.include_router(users.router)
 
 
 @app.get("/")
@@ -68,28 +77,42 @@ async def root():
     """Root endpoint"""
     return {
         "message": "Inventory Management System API",
-        "version": "1.0.0",
+        "version": "2.0.0",
         "docs": "/docs",
         "docs_url": "/docs"
     }
 
 
 @app.post("/api/auth/login", response_model=AuthResponse)
-async def login(auth_data: AuthRequest):
+async def login(auth_data: AuthRequest, db: Session = Depends(get_db)):
     """
     Authenticate with PIN and receive JWT token.
     Use your configured PIN to authenticate.
+    Authenticate with username and PIN to receive JWT token.
+    The token includes the user's role for access control.
     """
-    if not authenticate_pin(auth_data.pin):
+    user = authenticate_user(auth_data.username, auth_data.pin, db)
+    
+    if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid PIN"
+            detail="Invalid username or PIN"
         )
     
-    # Create access token
-    access_token = create_access_token(data={"sub": "user"})
+    # Create access token with user info
+    access_token = create_access_token(data={
+        "sub": str(user.id),
+        "user_id": user.id,
+        "username": user.username,
+        "role": user.role.value
+    })
     
-    return AuthResponse(access_token=access_token)
+    return AuthResponse(
+        access_token=access_token,
+        user_id=user.id,
+        username=user.username,
+        role=user.role.value
+    )
 
 
 @app.get("/api/health")
