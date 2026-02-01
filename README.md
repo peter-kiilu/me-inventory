@@ -1,12 +1,12 @@
-# MeStock - Inventory Management System
+# CoolHarlems - Inventory Management System
 
 A modern, full-stack inventory management application for retail shops with POS integration, offline capabilities, and mobile deployment as a Progressive Web App (PWA).
 
 ## 🌐 Live Demo
 
 - **Frontend:** [https://me-inventory.vercel.app](https://me-inventory.vercel.app)
-- **Backend API:** [https://mestock-api.onrender.com](https://mestock-api.onrender.com)
-- **API Docs:** [https://mestock-api.onrender.com/docs](https://mestock-api.onrender.com/docs)
+- **Backend API:** [https://coolharlems-api.onrender.com](https://coolharlems-api.onrender.com)
+- **API Docs:** [https://coolharlems-api.onrender.com/docs](https://coolharlems-api.onrender.com/docs)
 - **Default PIN:** `1234`
 
 ## 🚀 Features

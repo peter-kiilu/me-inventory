@@ -1,6 +1,6 @@
 # Scalability Recommendations
 
-This document outlines recommendations for scaling the MeStock Inventory Management System as your business grows.
+This document outlines recommendations for scaling the CoolHarlems Inventory Management System as your business grows.
 
 ## Current Architecture
 
@@ -30,7 +30,7 @@ This document outlines recommendations for scaling the MeStock Inventory Managem
 
 ```python
 # Update backend/database.py
-SQLALCHEMY_DATABASE_URL = "postgresql://user:password@localhost/mestock"
+SQLALCHEMY_DATABASE_URL = "postgresql://user:password@localhost/coolharlems"
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 ```

@@ -183,6 +183,7 @@ def create_default_admin(db: Session):
         )
         db.add(admin)
         db.commit()
-        print("✅ Default admin user created (username: admin, PIN: 1234)")
+        print("[OK] Default admin user created (username: admin, PIN: 1234)")
     
     return admin
+
