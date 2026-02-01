@@ -7,9 +7,24 @@ import type { AxiosInstance, AxiosError } from "axios";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "/api";
 
+export interface UserInfo {
+  user_id: number;
+  username: string;
+  role: "admin" | "staff";
+}
+
+export interface LoginResponse {
+  access_token: string;
+  token_type: string;
+  user_id: number;
+  username: string;
+  role: "admin" | "staff";
+}
+
 class ApiClient {
   private client: AxiosInstance;
   private token: string | null = null;
+  private userInfo: UserInfo | null = null;
 
   constructor() {
     this.client = axios.create({
@@ -19,8 +34,12 @@ class ApiClient {
       },
     });
 
-    // Load token from localStorage
+    // Load token and user info from localStorage
     this.token = localStorage.getItem("token");
+    const storedUserInfo = localStorage.getItem("userInfo");
+    if (storedUserInfo) {
+      this.userInfo = JSON.parse(storedUserInfo);
+    }
     if (this.token) {
       this.setAuthToken(this.token);
     }
@@ -32,7 +51,7 @@ class ApiClient {
         if (error.response?.status === 401) {
           // Unauthorized - clear token and redirect to login
           this.clearAuth();
-          window.location.href = "/login";
+          window.location.href = "/";
         }
         return Promise.reject(error);
       }
@@ -45,21 +64,46 @@ class ApiClient {
     localStorage.setItem("token", token);
   }
 
+  setUserInfo(userInfo: UserInfo) {
+    this.userInfo = userInfo;
+    localStorage.setItem("userInfo", JSON.stringify(userInfo));
+  }
+
   clearAuth() {
     this.token = null;
+    this.userInfo = null;
     delete this.client.defaults.headers.common["Authorization"];
     localStorage.removeItem("token");
+    localStorage.removeItem("userInfo");
   }
 
   isAuthenticated(): boolean {
     return !!this.token;
   }
 
+  getUserInfo(): UserInfo | null {
+    return this.userInfo;
+  }
+
+  isAdmin(): boolean {
+    return this.userInfo?.role === "admin";
+  }
+
+  isStaff(): boolean {
+    return this.userInfo?.role === "staff";
+  }
+
   // Auth
-  async login(pin: string) {
-    const response = await this.client.post("/auth/login", { pin });
-    this.setAuthToken(response.data.access_token);
-    return response.data;
+  async login(username: string, pin: string): Promise<LoginResponse> {
+    const response = await this.client.post("/auth/login", { username, pin });
+    const data = response.data;
+    this.setAuthToken(data.access_token);
+    this.setUserInfo({
+      user_id: data.user_id,
+      username: data.username,
+      role: data.role,
+    });
+    return data;
   }
 
   // Products
@@ -188,6 +232,40 @@ class ApiClient {
     const response = await this.client.get("/analytics/revenue-trend", {
       params: { days },
     });
+    return response.data;
+  }
+
+  async getInventorySummary() {
+    const response = await this.client.get("/analytics/inventory-summary");
+    return response.data;
+  }
+
+  // Users (Admin only)
+  async getUsers(params?: { skip?: number; limit?: number }) {
+    const response = await this.client.get("/users/", { params });
+    return response.data;
+  }
+
+  async getUser(id: number) {
+    const response = await this.client.get(`/users/${id}`);
+    return response.data;
+  }
+
+  async createUser(data: { username: string; pin: string; role: string }) {
+    const response = await this.client.post("/users/", data);
+    return response.data;
+  }
+
+  async updateUser(
+    id: number,
+    data: { username?: string; pin?: string; role?: string; is_active?: number }
+  ) {
+    const response = await this.client.put(`/users/${id}`, data);
+    return response.data;
+  }
+
+  async deleteUser(id: number) {
+    const response = await this.client.delete(`/users/${id}`);
     return response.data;
   }
 }

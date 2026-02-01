@@ -11,6 +11,8 @@ interface Product {
   inventory?: {
     quantity: number;
     min_stock_level: number;
+    batch_number?: string;
+    expiry_date?: string;
   };
 }
 
@@ -203,7 +205,9 @@ function ProductForm({ product, onClose, onSave }: { product: Product | null; on
     price: product?.price || 0,
     barcode: product?.barcode || '',
     initial_quantity: product?.inventory?.quantity || 0,
-    min_stock_level: product?.inventory?.min_stock_level || 10
+    min_stock_level: product?.inventory?.min_stock_level || 10,
+    batch_number: product?.inventory?.batch_number || '',
+    expiry_date: product?.inventory?.expiry_date || ''
   });
   const [loading, setLoading] = useState(false);
 
@@ -294,6 +298,7 @@ function ProductForm({ product, onClose, onSave }: { product: Product | null; on
           </div>
 
           {!product && (
+            <>
             <div className="grid grid-2">
               <div className="input-group">
                 <label className="input-label">Initial Quantity</label>
@@ -317,6 +322,30 @@ function ProductForm({ product, onClose, onSave }: { product: Product | null; on
                 />
               </div>
             </div>
+
+            <div className="grid grid-2">
+              <div className="input-group">
+                <label className="input-label">Batch Number</label>
+                <input
+                  type="text"
+                  className="input"
+                  value={formData.batch_number}
+                  onChange={(e) => setFormData({ ...formData, batch_number: e.target.value })}
+                  placeholder="e.g., BATCH-2026-001"
+                />
+              </div>
+
+              <div className="input-group">
+                <label className="input-label">Expiry Date</label>
+                <input
+                  type="date"
+                  className="input"
+                  value={formData.expiry_date}
+                  onChange={(e) => setFormData({ ...formData, expiry_date: e.target.value })}
+                />
+              </div>
+            </div>
+            </>
           )}
 
           <div className="flex gap-md" style={{ justifyContent: 'flex-end' }}>

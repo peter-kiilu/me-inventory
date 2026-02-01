@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from database import get_db
 from models import Product, Inventory
 from schemas import ProductCreate, ProductUpdate, ProductWithInventory, MessageResponse
-from auth import verify_token
+from auth import require_admin
 
 router = APIRouter(prefix="/api/products", tags=["Products"])
 
@@ -49,9 +49,9 @@ async def get_product(
 async def create_product(
     product_data: ProductCreate,
     db: Session = Depends(get_db),
-    token: dict = Depends(verify_token)
+    token: dict = Depends(require_admin)
 ):
-    """Create a new product with initial inventory"""
+    """Create a new product with initial inventory (Admin only)"""
     # Check if barcode already exists
     if product_data.barcode:
         existing = db.query(Product).filter(Product.barcode == product_data.barcode).first()
@@ -76,7 +76,9 @@ async def create_product(
     inventory = Inventory(
         product_id=product.id,
         quantity=product_data.initial_quantity,
-        min_stock_level=product_data.min_stock_level
+        min_stock_level=product_data.min_stock_level,
+        batch_number=product_data.batch_number,
+        expiry_date=product_data.expiry_date
     )
     db.add(inventory)
     
@@ -90,9 +92,9 @@ async def update_product(
     product_id: int,
     product_data: ProductUpdate,
     db: Session = Depends(get_db),
-    token: dict = Depends(verify_token)
+    token: dict = Depends(require_admin)
 ):
-    """Update an existing product"""
+    """Update an existing product (Admin only)"""
     product = db.query(Product).filter(Product.id == product_id).first()
     if not product:
         raise HTTPException(
@@ -123,9 +125,9 @@ async def update_product(
 async def delete_product(
     product_id: int,
     db: Session = Depends(get_db),
-    token: dict = Depends(verify_token)
+    token: dict = Depends(require_admin)
 ):
-    """Delete a product and its inventory"""
+    """Delete a product and its inventory (Admin only)"""
     product = db.query(Product).filter(Product.id == product_id).first()
     if not product:
         raise HTTPException(

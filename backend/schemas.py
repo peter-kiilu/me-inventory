@@ -1,7 +1,7 @@
 """
 Pydantic schemas for request/response validation
 """
-from datetime import datetime
+from datetime import datetime, date
 from typing import Optional, List
 from pydantic import BaseModel, Field
 
@@ -18,6 +18,8 @@ class ProductBase(BaseModel):
 class ProductCreate(ProductBase):
     initial_quantity: int = Field(default=0, ge=0)
     min_stock_level: int = Field(default=10, ge=0)
+    batch_number: Optional[str] = Field(None, max_length=100)
+    expiry_date: Optional[date] = None
 
 
 class ProductUpdate(BaseModel):
@@ -41,11 +43,15 @@ class Product(ProductBase):
 class InventoryBase(BaseModel):
     quantity: int = Field(..., ge=0)
     min_stock_level: int = Field(..., ge=0)
+    batch_number: Optional[str] = Field(None, max_length=100)
+    expiry_date: Optional[date] = None
 
 
 class InventoryUpdate(BaseModel):
     quantity: Optional[int] = Field(None, ge=0)
     min_stock_level: Optional[int] = Field(None, ge=0)
+    batch_number: Optional[str] = Field(None, max_length=100)
+    expiry_date: Optional[date] = None
 
 
 class Inventory(InventoryBase):
@@ -120,12 +126,42 @@ class SyncQueue(BaseModel):
 
 # Authentication Schemas
 class AuthRequest(BaseModel):
+    username: str = Field(..., min_length=1, max_length=100)
     pin: str = Field(..., min_length=4, max_length=10)
 
 
 class AuthResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
+    user_id: int
+    username: str
+    role: str
+
+
+# User Management Schemas
+class UserCreate(BaseModel):
+    username: str = Field(..., min_length=1, max_length=100)
+    pin: str = Field(..., min_length=4, max_length=10)
+    role: str = Field(default="staff", pattern="^(admin|staff)$")
+
+
+class UserUpdate(BaseModel):
+    username: Optional[str] = Field(None, min_length=1, max_length=100)
+    pin: Optional[str] = Field(None, min_length=4, max_length=10)
+    role: Optional[str] = Field(None, pattern="^(admin|staff)$")
+    is_active: Optional[int] = Field(None, ge=0, le=1)
+
+
+class UserResponse(BaseModel):
+    id: int
+    username: str
+    role: str
+    is_active: int
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
 
 
 # Analytics Schemas

@@ -1,4 +1,4 @@
-import  { useEffect } from 'react';
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useStore } from './store/useStore';
 import { syncService } from './services/sync';
@@ -14,16 +14,38 @@ import InventoryDashboard from './components/Inventory/InventoryDashboard';
 import SaleForm from './components/Sales/SaleForm';
 import SalesHistory from './components/Sales/SalesHistory';
 import AnalyticsDashboard from './components/Analytics/AnalyticsDashboard';
+import UserManagement from './components/Users/UserManagement';
 
 import './index.css';
 
+// Protected route wrapper for admin-only pages
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  const { user } = useStore();
+  
+  if (user.role !== 'admin') {
+    return <Navigate to="/" replace />;
+  }
+  
+  return <>{children}</>;
+}
+
 function App() {
-  const { user, setUser, setOnline, setPendingSyncCount } = useStore();
+  const { user, setUser, setOnline, setPendingSyncCount, isAdmin } = useStore();
 
   useEffect(() => {
-    // Check authentication
+    // Check authentication and load user info
     if (api.isAuthenticated()) {
-      setUser({ authenticated: true });
+      const userInfo = api.getUserInfo();
+      if (userInfo) {
+        setUser({
+          authenticated: true,
+          user_id: userInfo.user_id,
+          username: userInfo.username,
+          role: userInfo.role,
+        });
+      } else {
+        setUser({ authenticated: true });
+      }
     }
 
     // Initialize offline DB
@@ -75,12 +97,30 @@ function App() {
     <BrowserRouter>
       <Layout>
         <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/products" element={<ProductList />} />
-          <Route path="/inventory" element={<InventoryDashboard />} />
+          {/* Admin gets full dashboard, Staff gets simple sales page */}
+          <Route path="/" element={isAdmin() ? <Dashboard /> : <SaleForm />} />
+          
+          {/* Admin-only routes */}
+          <Route path="/products" element={
+            <AdminRoute><ProductList /></AdminRoute>
+          } />
+          <Route path="/inventory" element={
+            <AdminRoute><InventoryDashboard /></AdminRoute>
+          } />
+          <Route path="/sales/history" element={
+            <AdminRoute><SalesHistory /></AdminRoute>
+          } />
+          <Route path="/analytics" element={
+            <AdminRoute><AnalyticsDashboard /></AdminRoute>
+          } />
+          <Route path="/users" element={
+            <AdminRoute><UserManagement /></AdminRoute>
+          } />
+          
+          {/* Accessible to all authenticated users */}
           <Route path="/sales" element={<SaleForm />} />
-          <Route path="/sales/history" element={<SalesHistory />} />
-          <Route path="/analytics" element={<AnalyticsDashboard />} />
+          
+          {/* Redirect unknown routes */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Layout>
