@@ -87,7 +87,7 @@ export default function AnalyticsDashboard() {
           className="select"
           value={days}
           onChange={(e) => setDays(parseInt(e.target.value))}
-          style={{ maxWidth: '200px' }}
+          style={{ color: 'var(--text-primary)', backgroundColor: 'var(--bg-secondary)', maxWidth: '200px' }}
         >
           <option value={7}>Last 7 Days</option>
           <option value={30}>Last 30 Days</option>
