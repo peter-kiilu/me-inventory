@@ -153,8 +153,6 @@ def authenticate_user(username: str, pin: str, db: Session) -> Optional[User]:
     Authenticate user by username and PIN.
     Returns User object if authenticated, None otherwise.
     """
-    default_pin = os.getenv("DEFAULT_PIN", "0987")
-    return pin == default_pin
     user = db.query(User).filter(
         User.username == username,
         User.is_active == 1
@@ -185,7 +183,7 @@ def create_default_admin(db: Session):
         )
         db.add(admin)
         db.commit()
-        print("✅ Default admin user created (username: admin, PIN: 1234)")
+        print("[OK] Default admin user created (username: admin, PIN: 1234)")
     
     return admin
 

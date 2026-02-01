@@ -1,6 +1,6 @@
 # API Documentation
 
-Complete REST API documentation for the MeStock Inventory Management System.
+Complete REST API documentation for the CoolHarlems Inventory Management System.
 
 ## Base URL
 

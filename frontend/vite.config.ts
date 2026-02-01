@@ -10,8 +10,8 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["vite.png"],
       manifest: {
-        name: "MeStock - Inventory Management",
-        short_name: "MeStock",
+        name: "CoolHarlems - Inventory Management",
+        short_name: "CoolHarlems",
         description:
           "Retail shop inventory management with POS integration and offline support",
         theme_color: "#6366f1",

@@ -34,7 +34,7 @@ export default function Login() {
     <div className="flex-center" style={{ minHeight: '100vh' }}>
       <div className="glass-card" style={{ maxWidth: '400px', width: '90%' }}>
         <div className="text-center mb-xl">
-          <h1 style={{ marginBottom: '0.5rem' }}>🛒 MeStock</h1>
+          <h1 style={{ marginBottom: '0.5rem' }}>🛒 CoolHarlems</h1>
           <p className="text-muted">Inventory Management System</p>
         </div>
 
@@ -95,13 +95,10 @@ export default function Login() {
             )}
           </button>
         </form>
-<<<<<<< HEAD
-=======
 
         <div className="text-center text-muted" style={{ marginTop: 'var(--spacing-lg)', fontSize: '0.75rem' }}>
           Default Admin: admin / 1234
         </div>
->>>>>>> origin/main
       </div>
     </div>
   );

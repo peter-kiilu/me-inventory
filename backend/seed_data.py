@@ -26,10 +26,10 @@ def seed_data():
         ).count()
         
         if existing_demo >= 16:
-            print(f"⚠️  Demo products already seeded ({existing_demo} found). Skipping.")
+            print(f"[WARN] Demo products already seeded ({existing_demo} found). Skipping.")
             return
         
-        print(f"📦 Found {existing_demo} demo products, adding missing ones...")
+        print(f"[INFO] Found {existing_demo} demo products, adding missing ones...")
         
         # Demo products
         demo_products = [
@@ -60,7 +60,7 @@ def seed_data():
             {"name": "Soap Bar", "description": "Moisturizing soap bar", "category": "Personal Care", "price": 1.99, "barcode": "PC003", "quantity": 120, "min_stock": 40},
         ]
         
-        print("📦 Creating demo products...")
+        print("[INFO] Creating demo products...")
         
         for product_data in demo_products:
             # Create product
@@ -82,13 +82,13 @@ def seed_data():
             )
             db.add(inventory)
             
-            print(f"  ✅ {product.name} ({product.category}) - Stock: {product_data['quantity']}")
+            print(f"  [OK] {product.name} ({product.category}) - Stock: {product_data['quantity']}")
         
         db.commit()
-        print(f"\n✅ Successfully created {len(demo_products)} demo products!")
+        print(f"\n[OK] Successfully created {len(demo_products)} demo products!")
         
     except Exception as e:
-        print(f"❌ Error seeding data: {str(e)}")
+        print(f"[ERROR] Error seeding data: {str(e)}")
         db.rollback()
     finally:
         db.close()

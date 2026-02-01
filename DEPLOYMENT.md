@@ -1,6 +1,6 @@
 # Deployment Guide
 
-This guide covers deploying the MeStock Inventory Management System to production and installing it on mobile devices.
+This guide covers deploying the CoolHarlems Inventory Management System to production and installing it on mobile devices.
 
 ## Table of Contents
 
@@ -15,7 +15,6 @@ This guide covers deploying the MeStock Inventory Management System to productio
 ### Option 1: Railway.app (Recommended)
 
 1. **Create Railway Account**
-
    - Go to [railway.app](https://railway.app)
    - Sign up with GitHub
 
@@ -37,7 +36,6 @@ This guide covers deploying the MeStock Inventory Management System to productio
    ```
 
 3. **Set Environment Variables**
-
    - In Railway dashboard, go to your project
    - Add environment variables (see section below)
 
@@ -66,7 +64,7 @@ sudo apt install python3.10 python3.10-venv nginx
 
 # Clone repository
 git clone your-repo-url
-cd mestock/backend
+cd coolharlems/backend
 
 # Create virtual environment
 python3.10 -m venv venv
@@ -76,22 +74,22 @@ source venv/bin/activate
 pip install -r requirements.txt
 
 # Create systemd service
-sudo nano /etc/systemd/system/mestock.service
+sudo nano /etc/systemd/system/coolharlems.service
 ```
 
 **Systemd Service File:**
 
 ```ini
 [Unit]
-Description=MeStock Inventory API
+Description=CoolHarlems Inventory API
 After=network.target
 
 [Service]
 User=www-data
 Group=www-data
-WorkingDirectory=/path/to/mestock/backend
-Environment="PATH=/path/to/mestock/backend/venv/bin"
-ExecStart=/path/to/mestock/backend/venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000
+WorkingDirectory=/path/to/coolharlems/backend
+Environment="PATH=/path/to/coolharlems/backend/venv/bin"
+ExecStart=/path/to/coolharlems/backend/venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000
 
 [Install]
 WantedBy=multi-user.target
@@ -99,11 +97,11 @@ WantedBy=multi-user.target
 
 ```bash
 # Start service
-sudo systemctl start mestock
-sudo systemctl enable mestock
+sudo systemctl start coolharlems
+sudo systemctl enable coolharlems
 
 # Configure Nginx as reverse proxy
-sudo nano /etc/nginx/sites-available/mestock
+sudo nano /etc/nginx/sites-available/coolharlems
 ```
 
 **Nginx Configuration:**
@@ -208,7 +206,7 @@ server {
 2. Navigate to your deployed app URL
 3. Tap the Share button (square with arrow)
 4. Scroll and tap "Add to Home Screen"
-5. Name the app "MeStock"
+5. Name the app "CoolHarlems"
 6. Tap "Add"
 7. App icon appears on home screen
 
@@ -297,7 +295,6 @@ VITE_API_URL=https://your-backend-url.com/api
 
 1. **Deploy the app** to Netlify/Vercel
 2. **Share the URL** with client via:
-
    - SMS
    - Email
    - QR Code (generate at qr-code-generator.com)
@@ -314,14 +311,13 @@ VITE_API_URL=https://your-backend-url.com/api
 ### For Multiple Clients
 
 1. **Create landing page** with:
-
    - Install instructions
    - QR code
    - Direct install button
 
 2. **Example landing page**:
    ```html
-   <h1>Install MeStock</h1>
+   <h1>Install CoolHarlems</h1>
    <div id="pwa-install-button">Install App</div>
    <img src="qr-code.png" alt="Scan to install" />
    <p>Or visit: https://your-app-url.com</p>
@@ -336,7 +332,7 @@ VITE_API_URL=https://your-backend-url.com/api
 git pull
 
 # Restart service
-sudo systemctl restart mestock
+sudo systemctl restart coolharlems
 ```
 
 ### Frontend Updates
@@ -390,7 +386,7 @@ netlify deploy --prod --dir=dist
 
 For deployment issues:
 
-1. Check logs: `railway logs` or `sudo journalctl -u mestock`
+1. Check logs: `railway logs` or `sudo journalctl -u coolharlems`
 2. Verify environment variables
 3. Test API endpoints: `https://your-api-url.com/docs`
 4. Check browser console for frontend errors

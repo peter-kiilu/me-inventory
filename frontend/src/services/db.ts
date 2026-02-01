@@ -6,7 +6,7 @@ import { openDB } from 'idb';
 import type { DBSchema, IDBPDatabase } from 'idb';
 
 // Database schema types
-interface MeStockDB extends DBSchema {
+interface CoolHarlemsDB extends DBSchema {
   products: {
     key: number;
     value: {
@@ -46,16 +46,16 @@ interface MeStockDB extends DBSchema {
   };
 }
 
-const DB_NAME = 'mestock-db';
+const DB_NAME = 'coolharlems-db';
 const DB_VERSION = 1;
 
 class OfflineDB {
-  private db: IDBPDatabase<MeStockDB> | null = null;
+  private db: IDBPDatabase<CoolHarlemsDB> | null = null;
 
   async init() {
     if (this.db) return this.db;
 
-    this.db = await openDB<MeStockDB>(DB_NAME, DB_VERSION, {
+    this.db = await openDB<CoolHarlemsDB>(DB_NAME, DB_VERSION, {
       upgrade(db) {
         // Products store
         if (!db.objectStoreNames.contains('products')) {
@@ -134,7 +134,7 @@ class OfflineDB {
     return await db.getAll('pendingSales');
   }
 
-  async updatePendingSale(id: string, updates: Partial<MeStockDB['pendingSales']['value']>) {
+  async updatePendingSale(id: string, updates: Partial<CoolHarlemsDB['pendingSales']['value']>) {
     const db = await this.init();
     const sale = await db.get('pendingSales', id);
     if (sale) {

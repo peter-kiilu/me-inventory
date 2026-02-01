@@ -18,7 +18,7 @@ async def lifespan(app: FastAPI):
     """Lifespan context manager for startup and shutdown events"""
     # Startup
     init_db()
-    print("✅ Database initialized")
+    print("[OK] Database initialized")
     
     # Create default admin user
     from database import SessionLocal
@@ -32,8 +32,8 @@ async def lifespan(app: FastAPI):
     from seed_data import seed_data
     seed_data()
     
-    print("📊 Inventory Management System API started")
-    print("📚 API docs available at: http://localhost:8000/docs")
+    print("[INFO] Inventory Management System API started")
+    print("[DOCS] API docs available at: http://localhost:8000/docs")
     yield
     # Shutdown (add cleanup code here if needed)
 
