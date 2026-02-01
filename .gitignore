@@ -25,6 +25,8 @@ wheels/
 *.db
 *.sqlite
 *.sqlite3
+*.database.py
+*.seed_data.py
 
 # Node
 node_modules/
