@@ -28,7 +28,7 @@ async def lifespan(app: FastAPI):
     finally:
         db.close()
     
-    # Auto-seed demo data on startup (seed_data handles duplicate prevention)
+    # Auto-seed inventory data on startup (handles duplicate prevention)
     from seed_data import seed_data
     seed_data()
     
