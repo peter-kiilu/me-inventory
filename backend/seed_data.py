@@ -1,13 +1,13 @@
 """
-Seed data script to populate database with demo products
+Seed data script to populate database with inventory products
 """
 from sqlalchemy.orm import Session
 from database import SessionLocal, init_db
-from models import Product, Inventory
+from models import Product, Inventory, Sale, SaleItem
 
 
 def seed_data():
-    """Populate database with demo data"""
+    """Populate database with inventory products"""
     # Initialize database
     init_db()
     
@@ -15,61 +15,86 @@ def seed_data():
     db = SessionLocal()
     
     try:
-        # Check how many demo products already exist (by barcode prefix)
-        demo_barcodes = ['ELC', 'BEV', 'SNK', 'STA', 'PC0']
-        existing_demo = db.query(Product).filter(
-            Product.barcode.like('ELC%') | 
-            Product.barcode.like('BEV%') | 
-            Product.barcode.like('SNK%') | 
-            Product.barcode.like('STA%') | 
-            Product.barcode.like('PC0%')
-        ).count()
+        # Check if products already exist
+        existing_count = db.query(Product).count()
         
-        if existing_demo >= 16:
-            print(f"[WARN] Demo products already seeded ({existing_demo} found). Skipping.")
+        if existing_count >= 50:
+            print(f"[WARN] Products already seeded ({existing_count} found). Skipping.")
             return
         
-        print(f"[INFO] Found {existing_demo} demo products, adding missing ones...")
+        if existing_count > 0:
+            print(f"[INFO] Found {existing_count} existing products. Clearing and re-seeding...")
+            # Delete in order to respect foreign key constraints
+            db.query(SaleItem).delete()
+            db.query(Sale).delete()
+            db.query(Inventory).delete()
+            db.query(Product).delete()
+            db.commit()
         
-        # Demo products
-        demo_products = [
-            # Electronics
-            {"name": "Wireless Mouse", "description": "Ergonomic wireless mouse with USB receiver", "category": "Electronics", "price": 25.99, "barcode": "ELC001", "quantity": 50, "min_stock": 10},
-            {"name": "USB-C Cable", "description": "Fast charging USB-C cable 2m", "category": "Electronics", "price": 12.99, "barcode": "ELC002", "quantity": 100, "min_stock": 20},
-            {"name": "Bluetooth Speaker", "description": "Portable Bluetooth speaker with 10hr battery", "category": "Electronics", "price": 45.00, "barcode": "ELC003", "quantity": 30, "min_stock": 5},
-            {"name": "Phone Case", "description": "Protective phone case for iPhone", "category": "Electronics", "price": 15.99, "barcode": "ELC004", "quantity": 75, "min_stock": 15},
-            
-            # Beverages
-            {"name": "Coca Cola 500ml", "description": "Refreshing cola drink", "category": "Beverages", "price": 1.99, "barcode": "BEV001", "quantity": 200, "min_stock": 50},
-            {"name": "Water Bottle 1L", "description": "Pure mineral water", "category": "Beverages", "price": 0.99, "barcode": "BEV002", "quantity": 300, "min_stock": 100},
-            {"name": "Orange Juice 1L", "description": "100% pure orange juice", "category": "Beverages", "price": 3.49, "barcode": "BEV003", "quantity": 80, "min_stock": 20},
-            
-            # Snacks
-            {"name": "Potato Chips", "description": "Crispy salted potato chips", "category": "Snacks", "price": 2.49, "barcode": "SNK001", "quantity": 150, "min_stock": 30},
-            {"name": "Chocolate Bar", "description": "Milk chocolate bar 100g", "category": "Snacks", "price": 1.79, "barcode": "SNK002", "quantity": 120, "min_stock": 40},
-            {"name": "Granola Bar", "description": "Healthy granola bar with nuts", "category": "Snacks", "price": 2.99, "barcode": "SNK003", "quantity": 90, "min_stock": 25},
-            
-            # Stationery
-            {"name": "Notebook A5", "description": "Ruled notebook 100 pages", "category": "Stationery", "price": 4.99, "barcode": "STA001", "quantity": 60, "min_stock": 15},
-            {"name": "Ballpoint Pen Pack", "description": "Pack of 10 blue pens", "category": "Stationery", "price": 5.99, "barcode": "STA002", "quantity": 40, "min_stock": 10},
-            {"name": "Sticky Notes", "description": "Pack of 3 colorful sticky note pads", "category": "Stationery", "price": 3.49, "barcode": "STA003", "quantity": 70, "min_stock": 20},
-            
-            # Personal Care
-            {"name": "Hand Sanitizer", "description": "Antibacterial hand sanitizer 250ml", "category": "Personal Care", "price": 4.99, "barcode": "PC001", "quantity": 100, "min_stock": 30},
-            {"name": "Tissues Box", "description": "Soft facial tissues 200 count", "category": "Personal Care", "price": 2.99, "barcode": "PC002", "quantity": 80, "min_stock": 25},
-            {"name": "Soap Bar", "description": "Moisturizing soap bar", "category": "Personal Care", "price": 1.99, "barcode": "PC003", "quantity": 120, "min_stock": 40},
+        print("[INFO] Creating inventory products...")
+        
+        # Real inventory products
+        products = [
+            {"name": "2kg Maclick Dry", "category": "Animal Feed", "price": 450, "quantity": 10, "min_stock": 5},
+            {"name": "2kg Maclick Super", "category": "Animal Feed", "price": 550, "quantity": 10, "min_stock": 5},
+            {"name": "70kg Kienyeji Pro", "category": "Animal Feed", "price": 2600, "quantity": 5, "min_stock": 2},
+            {"name": "50mls Adamycin", "category": "Veterinary Medicine", "price": 280, "quantity": 10, "min_stock": 5},
+            {"name": "100mls Adamycin", "category": "Veterinary Medicine", "price": 450, "quantity": 10, "min_stock": 5},
+            {"name": "30g Vetoxy", "category": "Veterinary Medicine", "price": 100, "quantity": 15, "min_stock": 5},
+            {"name": "6 Nursery Sleeves", "category": "Farm Inputs", "price": 600, "quantity": 20, "min_stock": 5},
+            {"name": "30g Ascarex", "category": "Veterinary Medicine", "price": 130, "quantity": 15, "min_stock": 5},
+            {"name": "250mls Hitman", "category": "Agrochemicals", "price": 1100, "quantity": 10, "min_stock": 3},
+            {"name": "100mls Integra", "category": "Veterinary Medicine", "price": 450, "quantity": 10, "min_stock": 5},
+            {"name": "70kg Kienyeji", "category": "Animal Feed", "price": 2600, "quantity": 5, "min_stock": 2},
+            {"name": "5kg Maclick Super (2)", "category": "Animal Feed", "price": 1100, "quantity": 8, "min_stock": 3},
+            {"name": "8kg Chick Mash", "category": "Poultry Feed", "price": 680, "quantity": 10, "min_stock": 3},
+            {"name": "10kg Growers", "category": "Poultry Feed", "price": 700, "quantity": 10, "min_stock": 3},
+            {"name": "4kg Crumb", "category": "Poultry Feed", "price": 400, "quantity": 10, "min_stock": 5},
+            {"name": "5kg Chick Mash", "category": "Poultry Feed", "price": 420, "quantity": 10, "min_stock": 5},
+            {"name": "50mls Omite", "category": "Agrochemicals", "price": 350, "quantity": 10, "min_stock": 5},
+            {"name": "2kg Pioneer Maize", "category": "Seeds", "price": 800, "quantity": 10, "min_stock": 3},
+            {"name": "2kg Duma 43", "category": "Seeds", "price": 750, "quantity": 10, "min_stock": 3},
+            {"name": "10mls Dynamec", "category": "Agrochemicals", "price": 400, "quantity": 10, "min_stock": 5},
+            {"name": "10kg Crumbs", "category": "Poultry Feed", "price": 1000, "quantity": 8, "min_stock": 3},
+            {"name": "10kg Chickmash", "category": "Poultry Feed", "price": 850, "quantity": 8, "min_stock": 3},
+            {"name": "5kg Growers mash", "category": "Poultry Feed", "price": 350, "quantity": 10, "min_stock": 5},
+            {"name": "2kg Duma", "category": "Seeds", "price": 750, "quantity": 10, "min_stock": 3},
+            {"name": "50mls Adamycin (2)", "category": "Veterinary Medicine", "price": 560, "quantity": 10, "min_stock": 5},
+            {"name": "250mls Ranger", "category": "Agrochemicals", "price": 500, "quantity": 10, "min_stock": 5},
+            {"name": "50mls Dairy Pi", "category": "Animal Feed", "price": 2200, "quantity": 5, "min_stock": 2},
+            {"name": "1kg Growers", "category": "Poultry Feed", "price": 70, "quantity": 20, "min_stock": 10},
+            {"name": "1kg Crumbs", "category": "Poultry Feed", "price": 100, "quantity": 20, "min_stock": 10},
+            {"name": "1kg DAP", "category": "Fertilizers", "price": 120, "quantity": 20, "min_stock": 10},
+            {"name": "15kg Chickmash", "category": "Poultry Feed", "price": 1275, "quantity": 5, "min_stock": 2},
+            {"name": "5kg Growers PC", "category": "Poultry Feed", "price": 350, "quantity": 10, "min_stock": 5},
+            {"name": "2kg Duma 43 (2)", "category": "Seeds", "price": 1500, "quantity": 8, "min_stock": 3},
+            {"name": "2kg Sungura (2)", "category": "Seeds", "price": 1500, "quantity": 8, "min_stock": 3},
+            {"name": "500mls Ndovu", "category": "Agrochemicals", "price": 1000, "quantity": 8, "min_stock": 3},
+            {"name": "1ltr Weedal", "category": "Agrochemicals", "price": 800, "quantity": 8, "min_stock": 3},
+            {"name": "1ltr Ndovu", "category": "Agrochemicals", "price": 2000, "quantity": 5, "min_stock": 2},
+            {"name": "2kg Dekalb", "category": "Seeds", "price": 750, "quantity": 10, "min_stock": 3},
+            {"name": "50kg Dairy Pi", "category": "Animal Feed", "price": 2200, "quantity": 5, "min_stock": 2},
+            {"name": "70kg Kienyeji Pi", "category": "Animal Feed", "price": 2600, "quantity": 5, "min_stock": 2},
+            {"name": "2kg Duma 43 (3)", "category": "Seeds", "price": 2250, "quantity": 5, "min_stock": 2},
+            {"name": "50kg Dairy Meal", "category": "Animal Feed", "price": 2200, "quantity": 5, "min_stock": 2},
+            {"name": "10 Nursery sleeves", "category": "Farm Inputs", "price": 1000, "quantity": 20, "min_stock": 5},
+            {"name": "2kg Dap (2)", "category": "Fertilizers", "price": 240, "quantity": 15, "min_stock": 5},
+            {"name": "2kg Pioneer Maize (4)", "category": "Seeds", "price": 3750, "quantity": 5, "min_stock": 2},
+            {"name": "70kg Dairy Pio", "category": "Animal Feed", "price": 2600, "quantity": 5, "min_stock": 2},
+            {"name": "10 Nursery Sleeves", "category": "Farm Inputs", "price": 1000, "quantity": 20, "min_stock": 5},
+            {"name": "2kg Duma (2)", "category": "Seeds", "price": 1500, "quantity": 8, "min_stock": 3},
+            {"name": "2kg Sungura", "category": "Seeds", "price": 750, "quantity": 10, "min_stock": 3},
+            {"name": "50kg Bran (2)", "category": "Animal Feed", "price": 2500, "quantity": 5, "min_stock": 2},
         ]
         
-        print("[INFO] Creating demo products...")
-        
-        for product_data in demo_products:
+        for product_data in products:
             # Create product
             product = Product(
                 name=product_data["name"],
-                description=product_data["description"],
+                description="",
                 category=product_data["category"],
                 price=product_data["price"],
-                barcode=product_data["barcode"]
+                barcode=None
             )
             db.add(product)
             db.flush()  # Get product ID
@@ -82,10 +107,10 @@ def seed_data():
             )
             db.add(inventory)
             
-            print(f"  [OK] {product.name} ({product.category}) - Stock: {product_data['quantity']}")
+            print(f"  [OK] {product.name} ({product.category}) - KSH {product_data['price']} - Stock: {product_data['quantity']}")
         
         db.commit()
-        print(f"\n[OK] Successfully created {len(demo_products)} demo products!")
+        print(f"\n[OK] Successfully created {len(products)} inventory products!")
         
     except Exception as e:
         print(f"[ERROR] Error seeding data: {str(e)}")
