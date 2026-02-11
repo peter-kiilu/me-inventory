@@ -30,6 +30,13 @@ def seed_data():
             db.query(Inventory).delete()
             db.query(Product).delete()
             db.commit()
+
+        if existing_demo >= 16:
+            print(f"[WARN] Demo products already seeded ({existing_demo} found). Skipping.")
+            return
+        
+        print(f"[INFO] Found {existing_demo} demo products, adding missing ones...")
+     main
         
         print("[INFO] Creating inventory products...")
         
@@ -86,6 +93,9 @@ def seed_data():
             {"name": "2kg Sungura", "category": "Seeds", "price": 750, "quantity": 10, "min_stock": 3},
             {"name": "50kg Bran (2)", "category": "Animal Feed", "price": 2500, "quantity": 5, "min_stock": 2},
         ]
+
+        print("[INFO] Creating demo products...")
+       main
         
         for product_data in products:
             # Create product
@@ -111,6 +121,12 @@ def seed_data():
         
         db.commit()
         print(f"\n[OK] Successfully created {len(products)} inventory products!")
+
+            print(f"  [OK] {product.name} ({product.category}) - Stock: {product_data['quantity']}")
+        
+        db.commit()
+        print(f"\n[OK] Successfully created {len(demo_products)} demo products!")
+ main
         
     except Exception as e:
         print(f"[ERROR] Error seeding data: {str(e)}")
