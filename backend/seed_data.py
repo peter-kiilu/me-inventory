@@ -36,7 +36,7 @@ def seed_data():
             return
         
         print(f"[INFO] Found {existing_demo} demo products, adding missing ones...")
-     main
+        main
         
         print("[INFO] Creating inventory products...")
         
@@ -126,7 +126,7 @@ def seed_data():
         
         db.commit()
         print(f"\n[OK] Successfully created {len(demo_products)} demo products!")
- main
+main
         
     except Exception as e:
         print(f"[ERROR] Error seeding data: {str(e)}")
